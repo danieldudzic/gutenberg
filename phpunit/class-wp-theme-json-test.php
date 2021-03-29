@@ -155,11 +155,11 @@ class WP_Theme_JSON_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertEquals(
-			':root{--wp--preset--color--grey: grey;--wp--preset--font-family--small: 14px;--wp--preset--font-family--big: 41px;}.wp-block-group{--wp--custom--base-font: 16;--wp--custom--line-height--small: 1.2;--wp--custom--line-height--medium: 1.4;--wp--custom--line-height--large: 1.8;}:root{--wp--style--color--link: #111;color: var(--wp--preset--color--grey);}.wp-block-group{--wp--style--color--link: #333;padding-top: 12px;padding-bottom: 24px;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
+			':root{--wp--preset--color--grey: grey;--wp--preset--font-family--small: 14px;--wp--preset--font-family--big: 41px;}.wp-block-group{--wp--custom--base-font: 16;--wp--custom--line-height--small: 1.2;--wp--custom--line-height--medium: 1.4;--wp--custom--line-height--large: 1.8;}:root{color: var(--wp--preset--color--grey);}a{color: #111;}.wp-block-group{padding-top: 12px;padding-bottom: 24px;}.wp-block-group a{color: #333;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
 			$theme_json->get_stylesheet()
 		);
 		$this->assertEquals(
-			':root{--wp--style--color--link: #111;color: var(--wp--preset--color--grey);}.wp-block-group{--wp--style--color--link: #333;padding-top: 12px;padding-bottom: 24px;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
+			':root{color: var(--wp--preset--color--grey);}a{color: #111;}.wp-block-group{padding-top: 12px;padding-bottom: 24px;}.wp-block-group a{color: #333;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
 			$theme_json->get_stylesheet( 'block_styles' )
 		);
 		$this->assertEquals(
@@ -236,6 +236,80 @@ class WP_Theme_JSON_Test extends WP_UnitTestCase {
 								),
 							),
 						),
+						'core/heading' => array(
+							'color' => array(
+								'text' => '#123456',
+							),
+							'elements' => array(
+								'h1' => array(
+									'typography' => array(
+										'fontSize' => '60px',
+									),
+								),
+								'h2' => array(
+									'typography' => array(
+										'fontSize' => '30px',
+									),
+								),
+								'h3' => array(
+									'typography' => array(
+										'fontSize' => '20px',
+									),
+								),
+								'h4' => array(
+									'typography' => array(
+										'fontSize' => '15px',
+									),
+								),
+								'h5' => array(
+									'typography' => array(
+										'fontSize' => '12px',
+									),
+								),
+								'h6' => array(
+									'typography' => array(
+										'fontSize' => '10px',
+									),
+								),
+							),
+						),
+						'core/post-title' => array(
+							'color' => array(
+								'text' => '#123456',
+							),
+							'elements' => array(
+								'h1' => array(
+									'typography' => array(
+										'fontSize' => '60px',
+									),
+								),
+								'h2' => array(
+									'typography' => array(
+										'fontSize' => '30px',
+									),
+								),
+								'h3' => array(
+									'typography' => array(
+										'fontSize' => '20px',
+									),
+								),
+								'h4' => array(
+									'typography' => array(
+										'fontSize' => '15px',
+									),
+								),
+								'h5' => array(
+									'typography' => array(
+										'fontSize' => '12px',
+									),
+								),
+								'h6' => array(
+									'typography' => array(
+										'fontSize' => '10px',
+									),
+								),
+							),
+						),
 					),
 				),
 				'misc'     => 'value',
@@ -243,11 +317,11 @@ class WP_Theme_JSON_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertEquals(
-			':root{--wp--preset--color--grey: grey;--wp--preset--font-family--small: 14px;--wp--preset--font-family--big: 41px;}.wp-block-group{--wp--custom--base-font: 16;--wp--custom--line-height--small: 1.2;--wp--custom--line-height--medium: 1.4;--wp--custom--line-height--large: 1.8;}:root{--wp--style--color--link: #111;color: var(--wp--preset--color--grey);}.wp-block-group{--wp--style--color--link: #333;padding-top: 12px;padding-bottom: 24px;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
+			':root{--wp--preset--color--grey: grey;--wp--preset--font-family--small: 14px;--wp--preset--font-family--big: 41px;}.wp-block-group{--wp--custom--base-font: 16;--wp--custom--line-height--small: 1.2;--wp--custom--line-height--medium: 1.4;--wp--custom--line-height--large: 1.8;}:root{color: var(--wp--preset--color--grey);}a{color: #111;}.wp-block-group{padding-top: 12px;padding-bottom: 24px;}.wp-block-group a{color: #333;}h1,h2,h3,h4,h5,h6{color: #123456;}h1{font-size: 60px;}h2{font-size: 30px;}h3{font-size: 20px;}h4{font-size: 15px;}h5{font-size: 12px;}h6{font-size: 10px;}.wp-block-post-title{color: #123456;}h1.wp-block-post-title{font-size: 60px;}h2.wp-block-post-title{font-size: 30px;}h3.wp-block-post-title{font-size: 20px;}h4.wp-block-post-title{font-size: 15px;}h5.wp-block-post-title{font-size: 12px;}h6.wp-block-post-title{font-size: 10px;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
 			$theme_json->get_stylesheet()
 		);
 		$this->assertEquals(
-			':root{--wp--style--color--link: #111;color: var(--wp--preset--color--grey);}.wp-block-group{--wp--style--color--link: #333;padding-top: 12px;padding-bottom: 24px;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
+			':root{color: var(--wp--preset--color--grey);}a{color: #111;}.wp-block-group{padding-top: 12px;padding-bottom: 24px;}.wp-block-group a{color: #333;}h1,h2,h3,h4,h5,h6{color: #123456;}h1{font-size: 60px;}h2{font-size: 30px;}h3{font-size: 20px;}h4{font-size: 15px;}h5{font-size: 12px;}h6{font-size: 10px;}.wp-block-post-title{color: #123456;}h1.wp-block-post-title{font-size: 60px;}h2.wp-block-post-title{font-size: 30px;}h3.wp-block-post-title{font-size: 20px;}h4.wp-block-post-title{font-size: 15px;}h5.wp-block-post-title{font-size: 12px;}h6.wp-block-post-title{font-size: 10px;}.has-grey-color{color: grey !important;}.has-grey-background-color{background-color: grey !important;}',
 			$theme_json->get_stylesheet( 'block_styles' )
 		);
 		$this->assertEquals(
@@ -312,14 +386,18 @@ class WP_Theme_JSON_Test extends WP_UnitTestCase {
 				),
 				'styles'   => array(
 					'blocks' => array(
-						'core/heading/h2' => array(
-							'color'      => array(
-								'text'       => 'red',
-								'background' => 'blue',
-							),
-							'typography' => array(
-								'fontSize'   => '12px',
-								'lineHeight' => '1.3',
+						'core/heading' => array(
+							'elements' => array(
+								'h2' => array(
+									'color'      => array(
+										'text'       => 'red',
+										'background' => 'blue',
+									),
+									'typography' => array(
+										'fontSize'   => '12px',
+										'lineHeight' => '1.3',
+									),
+								),
 							),
 						),
 					),

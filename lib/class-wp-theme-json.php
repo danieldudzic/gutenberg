@@ -270,22 +270,20 @@ class WP_Theme_JSON {
 		$blocks   = $registry->get_all_registered();
 		foreach ( $blocks as $block_name => $block_type ) {
 			/*
-			 * Assign the selector for the block.
+			 * Assign the selector for the block. The selector for most of the blocks
+			 * is a class that can be generated based on its name:
 			 *
-			 * Some blocks can declare multiple selectors:
+			 * - 'core/group'   => '.wp-block-group'
+			 * - 'core/columns' => '.wp-block-columns'
 			 *
-			 * - core/heading represents the H1-H6 HTML elements
-			 * - core/list represents the UL and OL HTML elements
-			 * - core/group is meant to represent DIV and other HTML elements
-			 *
-			 * Some other blocks don't provide a selector,
-			 * so we generate a class for them based on their name:
-			 *
-			 * - 'core/group' => '.wp-block-group'
-			 * - 'my-custom-library/block-name' => '.wp-block-my-custom-library-block-name'
-			 *
-			 * Note that, for core blocks, we don't add the `core/` prefix to its class name.
+			 * Note that core blocks don't have the `core/` prefix in its class name.
 			 * This is for historical reasons, as they come with a class without that infix.
+			 * Third-party blocks will have that in the class name.
+			 *
+			 * However, there are a few that don't have any class,
+			 * or perhaps they want to use a particular selector.
+			 * These can provide their own via __experimentalSelector.
+			 * If it exists, we take that as the block selector.
 			 *
 			 */
 			if (
@@ -295,23 +293,18 @@ class WP_Theme_JSON {
 				self::$blocks_metadata[ $block_name ] = array(
 					'selector' => $block_type->supports['__experimentalSelector'],
 				);
-			} elseif (
-				isset( $block_type->supports['__experimentalSelector'] ) &&
-				is_array( $block_type->supports['__experimentalSelector'] )
-			) {
-				foreach ( $block_type->supports['__experimentalSelector'] as $key => $selector_metadata ) {
-					if ( ! isset( $selector_metadata['selector'] ) ) {
-						continue;
-					}
-
-					self::$blocks_metadata[ $key ] = array(
-						'selector' => $selector_metadata['selector'],
-					);
-				}
 			} else {
 				self::$blocks_metadata[ $block_name ] = array(
 					'selector' => '.wp-block-' . str_replace( '/', '-', str_replace( 'core/', '', $block_name ) ),
 				);
+			}
+
+			if ( isset( $block_type->supports['__experimentalSelectorsForElements'] ) ) {
+				foreach( $block_type->supports['__experimentalSelectorsForElements'] as $element_name => $element_selector ) {
+					self::$blocks_metadata[ $block_name ]['elements'][ $element_name ] = $element_selector;
+				}
+			} else {
+				self::$blocks_metadata[ $block_name ]['elements'] = array();
 			}
 		}
 
@@ -424,16 +417,6 @@ class WP_Theme_JSON {
 		}
 
 		return false;
-	}
-
-	private static function compute_elements( $input, $output ) {
-		if ( isset( $input['elements']['link']['color']['text'] ) ) {
-			$output[] = array(
-				'name'  => '--wp--style--color--link',
-				'value' => $input['elements']['link']['color']['text']
-			);
-		}
-		return $output;
 	}
 
 	/**
@@ -697,17 +680,25 @@ class WP_Theme_JSON {
 	 *
 	 * @return string The new stylesheet.
 	 */
-	private static function get_styles_of_node( $node, $selector ) {
-		$output  = '';
+	private static function get_styles_of_node( $node, $selector, $element_selectors ) {
+		$top_level = '';
+		$elements  = '';
 
-		// At the moment, elements can output --wp--style--link.
-		// This needs to be refactored.
-		$elements     = array();
-		$elements     = self::compute_elements( $node, $elements );
-		$declarations = self::compute_style_properties( $node, $elements );
-		$output      .= self::to_ruleset( $declarations, $selector );
+		$declarations = array();
+		$declarations = self::compute_style_properties( $node, $declarations );
+		$top_level   .= self::to_ruleset( $declarations, $selector );
+		if ( ! isset( $node['elements'] ) ) {
+			return $top_level;
+		}
 
-		return $output;
+		foreach( $node['elements'] as $element_name => $element_styles ) {
+			$declarations     = array();
+			$declarations     = self::compute_style_properties( $node['elements'][ $element_name ], $declarations );
+			$element_selector = $element_selectors[ $element_name ];
+			$elements        .= self::to_ruleset( $declarations, $element_selector );
+		}
+
+		return $top_level . $elements;
 	}
 
 	/**
@@ -809,6 +800,15 @@ class WP_Theme_JSON {
 			$styles_paths[] = array(
 				'path'     => array('styles'),
 				'selector' => self::ROOT_BLOCK_SELECTOR,
+				'elements' => array(
+					'link' => 'a',
+					'h1'   => 'h1',
+					'h2'   => 'h2',
+					'h3'   => 'h3',
+					'h4'   => 'h4',
+					'h5'   => 'h5',
+					'h6'   => 'h6',
+				),
 			);
 		}
 		if ( isset( $input['styles']['blocks'] ) ) {
@@ -817,9 +817,23 @@ class WP_Theme_JSON {
 					continue;
 				}
 
+				$block_selector = $block_list[ $block_name ]['selector'];
+				$block_selectors_for_elements = array_merge(
+					array(
+						'link' => $block_selector . ' a',
+						'h1'   => $block_selector . ' h1',
+						'h2'   => $block_selector . ' h2',
+						'h3'   => $block_selector . ' h3',
+						'h4'   => $block_selector . ' h4',
+						'h5'   => $block_selector . ' h5',
+						'h6'   => $block_selector . ' h6',
+					),
+					$block_list[ $block_name ]['elements']
+				);
 				$styles_paths[] = array(
 					'path'     => array( 'styles', 'blocks', $block_name ),
-					'selector' => $block_list[ $block_name ]['selector'],
+					'selector' => $block_selector,
+					'elements' => $block_selectors_for_elements,
 				);
 			}
 		}
@@ -828,7 +842,7 @@ class WP_Theme_JSON {
 			$blocks = '';
 			foreach( $styles_paths as $style ) {
 				$node    = _wp_array_get( $input, $style['path'] );
-				$blocks .= self::get_styles_of_node( $node, $style['selector'] );
+				$blocks .= self::get_styles_of_node( $node, $style['selector'], $style['elements'] );
 			}
 			$presets = '';
 			foreach( $settings_paths as $setting ) {
@@ -858,7 +872,7 @@ class WP_Theme_JSON {
 		$blocks = '';
 		foreach( $styles_paths as $style ) {
 			$node    = _wp_array_get( $input, $style['path'] );
-			$blocks .= self::get_styles_of_node( $node, $style['selector'] );
+			$blocks .= self::get_styles_of_node( $node, $style['selector'], $style['elements'] );
 		}
 		return $css_vars . $blocks . $presets;
 	}

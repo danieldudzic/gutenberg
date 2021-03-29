@@ -111,10 +111,16 @@
 	}
 
 	@include break-small() {
-		display: flex;
-		flex-direction: row;
-		position: relative;
-		background-color: inherit;
+		&:not(.is-menu-open) {
+			display: flex;
+			flex-direction: row;
+			position: relative;
+			background-color: inherit;
+
+			.wp-block-navigation__responsive-container-close {
+				display: none;
+			}
+		}
 
 		&.is-menu-open {
 			flex-direction: row;
@@ -174,10 +180,6 @@
 	top: 24px;
 	right: 24px;
 	z-index: 2; // Needs to be above the modal z index itself.
-
-	@include break-small() {
-		display: none;
-	}
 }
 
 // The menu adds a wrapping container.

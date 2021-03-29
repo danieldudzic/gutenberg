@@ -9,9 +9,7 @@ function navigationToggleModal() {
 }
 
 MicroModal.init( {
-	// eslint-disable-next-line no-unused-vars
-	onShow: ( modal ) => navigationToggleModal(),
-	// eslint-disable-next-line no-unused-vars
-	onClose: ( modal ) => navigationToggleModal(),
+	onShow: () => navigationToggleModal(),
+	onClose: () => navigationToggleModal(),
 	openClass: 'is-menu-open',
 } );
